@@ -1,17 +1,9 @@
-import time
-import httpx
-
+from dependencies import *
 from vkbottle import Keyboard, KeyboardButtonColor, Text
 from vkbottle.bot import Bot, Message
-
-from config import Config
-from utils import get_groups_message, find_group, get_schedule_parse
-from consts import groups_commands, start_commands, spam_list, \
-    SCHEDULE_URL, MESSAGE_STOP_FLOOD, MESSAGE_GROUP_NOT_FOUND, \
-    MESSAGE_SCHEDULE_NOT_FOUND, MESSAGE_CURRENT_WEEK_NOT_FOUND, MESSAGE_CONNECTION_PROBLEM, MESSAGE_ON_START
-from exceptions import ScheduleNotFound, CurrentWeekNotFound
-
 from vk.config import VkConfig
+
+logging.basicConfig(filename='vk_server.log', format='%(asctime)s %(levelname)s %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
 
 bot = Bot(VkConfig.ACCESS_TOKEN)
 
@@ -29,22 +21,19 @@ async def handler_any(message: Message):
     cur_time = time.time()
 
     if (user_id in spam_list) and (spam_list[user_id] > cur_time):
-        await message.answer(MESSAGE_STOP_FLOOD)
-        return None
+        return await message.answer(MESSAGE_STOP_FLOOD)
 
     spam_list[user_id] = cur_time + Config.SPAM_DELAY
 
     if any(groups_command in text for groups_command in groups_commands):
-        await message.answer(get_groups_message())
-        return None
+        return await message.answer(get_groups_message())
 
     keyboard = Keyboard()
     keyboard.add(Text('Группы'), color=KeyboardButtonColor.NEGATIVE)
 
     group_found = find_group(text)
     if group_found is None:
-        await message.answer(MESSAGE_GROUP_NOT_FOUND, reply_markup=keyboard)
-        return None
+        return await message.answer(MESSAGE_GROUP_NOT_FOUND, reply_markup=keyboard)
 
     keyboard.add(Text(group_found['name']), color=KeyboardButtonColor.POSITIVE)
 
@@ -58,8 +47,11 @@ async def handler_any(message: Message):
         await message.answer(MESSAGE_SCHEDULE_NOT_FOUND, keyboard=keyboard)
     except CurrentWeekNotFound:
         await message.answer(MESSAGE_CURRENT_WEEK_NOT_FOUND, keyboard=keyboard)
-    except:
+    except httpx.HTTPError:
         await message.answer(MESSAGE_CONNECTION_PROBLEM, keyboard=keyboard)
+    except:
+        logging.exception('Sending a schedule')
+        await message.answer(MESSAGE_SOMETHING_WENT_WRONG, keyboard=keyboard)
 
 if __name__ == '__main__':
     bot.run_forever()
