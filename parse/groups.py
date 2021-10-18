@@ -3,7 +3,7 @@ from bs4 import BeautifulSoup
 
 class GroupsParser:
     def __init__(self):
-        self.__groups = defaultdict(list)
+        self.__groups = defaultdict(lambda: defaultdict(list))
 
     def add_group(self, html):
         self.__soup = BeautifulSoup(html, 'html.parser')
@@ -17,6 +17,8 @@ class GroupsParser:
 
         if div_general_title_page_no_print is None:
             return None
+
+        institute, course, _ = div_general_title_page_no_print.text.strip().replace(',','').split()
         
         form_table_filter = self.__soup.find('form', {'class':'table-filter'})
 
@@ -33,4 +35,4 @@ class GroupsParser:
                 'name': a_item_filter_select.text.strip(),
                 'url': a_item_filter_select['href']
             }
-            self.__groups[div_general_title_page_no_print.text.strip()].append(group)
+            self.__groups[institute][course].append(group)
