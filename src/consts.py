@@ -74,5 +74,3 @@ MESSAGE_COURSE_NOT_FOUND = '📛 Курс не найден.'
 MESSAGE_GROUP_NOT_FOUND = '📛 Группа не найдена.'
 
 MESSAGE_CANCELLED = '❌ Действие отменено.'
-
-spam_list = {}

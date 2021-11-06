@@ -1,8 +1,10 @@
 from collections import defaultdict
 from bs4 import BeautifulSoup
 
+
 class GroupsParser:
     def __init__(self):
+        self.__soup = None
         self.__groups = defaultdict(lambda: defaultdict(list))
 
     def add_group(self, html):
@@ -18,14 +20,14 @@ class GroupsParser:
         if div_general_title_page_no_print is None:
             return None
 
-        institute, course, _ = div_general_title_page_no_print.text.strip().replace(',','').split()
-        
-        form_table_filter = self.__soup.find('form', {'class':'table-filter'})
+        institute, course, _ = div_general_title_page_no_print.text.strip().replace(',', '').split()
+
+        form_table_filter = self.__soup.find('form', {'class': 'table-filter'})
 
         if form_table_filter is None:
             return None
 
-        a_item_filters_select = form_table_filter.find_all('a', {'class':'item_filter_select'})
+        a_item_filters_select = form_table_filter.find_all('a', {'class': 'item_filter_select'})
 
         if a_item_filters_select is None:
             return None
