@@ -10,7 +10,7 @@ class GroupsParser:
         self.__soup = None
         self.__groups = defaultdict(lambda: defaultdict(lambda: defaultdict(list)))
 
-    def add_group(self, html):
+    def add_group(self, html: str):
         self.__parse_group(html)
 
     def get_groups(self):
