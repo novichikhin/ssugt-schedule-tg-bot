@@ -2,7 +2,8 @@ from aiogram import types
 from aiogram.dispatcher import FSMContext
 
 from src.consts import MESSAGE_CANCELLED, MESSAGE_INSTITUTE_NOT_FOUND, MESSAGE_SELECT_COURSE, MESSAGE_COURSE_NOT_FOUND, \
-    MESSAGE_SELECT_GROUP, MESSAGE_SELECT_INSTITUTE
+    MESSAGE_SELECT_GROUP, MESSAGE_SELECT_INSTITUTE, MESSAGE_FORM_OF_TRAINING_NOT_FOUND, MESSAGE_SELECT_FORM_OF_TRAINING, \
+    KEYBOARD_BUTTON_CHOOSE_GROUP
 from src.services.groups import groups_service
 from src.tg.states.group import GroupState
 from src.tg.handlers.schedule import handler_schedule
@@ -14,7 +15,7 @@ async def handler_cancel(message: types.Message, state: FSMContext):
         return
 
     keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    keyboard.add(types.KeyboardButton(text='Выбрать группу'))
+    keyboard.add(types.KeyboardButton(text=KEYBOARD_BUTTON_CHOOSE_GROUP))
 
     await state.finish()
     await message.answer(MESSAGE_CANCELLED, reply_markup=keyboard)
@@ -26,7 +27,7 @@ async def process_institute(message: types.Message, state: FSMContext):
 
     if institute not in groups_service.get_groups():
         await state.finish()
-        keyboard.add(types.KeyboardButton(text='Выбрать группу'))
+        keyboard.add(types.KeyboardButton(text=KEYBOARD_BUTTON_CHOOSE_GROUP))
         return await message.reply(MESSAGE_INSTITUTE_NOT_FOUND, reply_markup=keyboard)
 
     async with state.proxy() as data:
@@ -46,10 +47,31 @@ async def process_course(message: types.Message, state: FSMContext):
         institute = data['institute']
         if course not in groups_service.get_groups()[institute]:
             await state.finish()
-            keyboard.add(types.KeyboardButton(text='Выбрать группу'))
+            keyboard.add(types.KeyboardButton(text=KEYBOARD_BUTTON_CHOOSE_GROUP))
             return await message.reply(MESSAGE_COURSE_NOT_FOUND, reply_markup=keyboard)
 
-    keyboard.add(*(types.KeyboardButton(x['name']) for x in groups_service.get_groups()[institute][course]))
+        data['course'] = course
+
+    keyboard.add(*(types.KeyboardButton(x) for x in groups_service.get_groups()[institute][course].keys()))
+
+    await GroupState.form_of_training.set()
+    await message.reply(MESSAGE_SELECT_FORM_OF_TRAINING, reply_markup=keyboard)
+
+
+async def process_form_of_training(message: types.Message, state: FSMContext):
+    keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=4)
+    form_of_training = message.text
+
+    async with state.proxy() as data:
+        institute = data['institute']
+        course = data['course']
+
+        if form_of_training not in groups_service.get_groups()[institute][course]:
+            await state.finish()
+            keyboard.add(types.KeyboardButton(text=KEYBOARD_BUTTON_CHOOSE_GROUP))
+            return await message.reply(MESSAGE_FORM_OF_TRAINING_NOT_FOUND, reply_markup=keyboard)
+
+    keyboard.add(*(types.KeyboardButton(x['name']) for x in groups_service.get_groups()[institute][course][form_of_training]))
 
     await GroupState.group.set()
     await message.reply(MESSAGE_SELECT_GROUP, reply_markup=keyboard)

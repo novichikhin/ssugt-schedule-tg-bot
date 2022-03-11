@@ -3,17 +3,16 @@ from bs4 import BeautifulSoup
 
 
 class AudiencesParser:
-    def __init__(self, html):
+    def __init__(self, html: str):
         self.__audiences = defaultdict(list)
-
-        self.__soup = BeautifulSoup(html, 'html.parser')
-        self.__parse_html()
+        self.__parse_html(html)
 
     def get_audiences(self):
         return self.__audiences
 
-    def __parse_html(self):
-        div_block_alf_block_alfabet_names2 = self.__soup.find_all('div', {'class': 'block_alf block_alfabet_names2'})
+    def __parse_html(self, html: str) -> None:
+        soup = BeautifulSoup(html, 'html.parser')
+        div_block_alf_block_alfabet_names2 = soup.find_all('div', {'class': 'block_alf block_alfabet_names2'})
 
         if div_block_alf_block_alfabet_names2 is None:
             return None

@@ -7,11 +7,11 @@ class GroupsService:
         with open('groups.json', encoding='utf-8') as f:
             self.__groups = json.load(f)
 
-    def get_groups(self) -> Optional[Dict[str, Dict[str, List]]]:
+    def get_groups(self):
         return self.__groups
 
     def find_group(self, name: str) -> Optional[dict]:
-        return next((c for a in self.get_groups().values() for b in a.values() for c in b if c['name'].lower() == name),
+        return next((d for a in self.get_groups().values() for b in a.values() for c in b.values() for d in c if d['name'].lower() == name),
                     None)
 
 

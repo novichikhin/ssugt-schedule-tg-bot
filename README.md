@@ -1,4 +1,3 @@
-# SSUGT Schedule Bots (VK/TG)
+# SSUGT Schedule Telegram Bot
 
-- [VK Bot](https://vk.me/ssugt_schedule)
 - [Telegram Bot](https://t.me/ssugt_schedule_bot)
