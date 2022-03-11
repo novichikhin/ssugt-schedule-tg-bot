@@ -1,7 +1,7 @@
 from aiogram import types
 from aiogram.dispatcher import FSMContext
 
-from src.consts import MESSAGE_ON_START
+from src.consts import MESSAGE_ON_START, KEYBOARD_BUTTON_CHOOSE_GROUP
 
 
 async def handler_start(message: types.Message, state: FSMContext):
@@ -10,6 +10,6 @@ async def handler_start(message: types.Message, state: FSMContext):
         await state.finish()
 
     keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    keyboard.add(types.KeyboardButton(text='Выбрать группу'))
+    keyboard.add(types.KeyboardButton(text=KEYBOARD_BUTTON_CHOOSE_GROUP))
 
     await message.answer(MESSAGE_ON_START, reply_markup=keyboard)
