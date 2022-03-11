@@ -18,7 +18,7 @@ class ScheduleParser:
         div_general_title_page_no_print = soup.find('div', {'class': 'general_title_page no-print'})
 
         if div_general_title_page_no_print is None:
-            return None
+            return
 
         # print(f"{div_general_title_page_no_print.text}\n\n\n")
         self.__schedule['group'] = div_general_title_page_no_print.text.strip()

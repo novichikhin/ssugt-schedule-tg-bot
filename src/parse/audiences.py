@@ -15,7 +15,7 @@ class AudiencesParser:
         div_block_alf_block_alfabet_names2 = soup.find_all('div', {'class': 'block_alf block_alfabet_names2'})
 
         if div_block_alf_block_alfabet_names2 is None:
-            return None
+            return
 
         for div_block_alf_block_alfabet_name2 in div_block_alf_block_alfabet_names2:
             div_letter_alfabet = div_block_alf_block_alfabet_name2.find('div', {'class': 'letter_alfabet'})

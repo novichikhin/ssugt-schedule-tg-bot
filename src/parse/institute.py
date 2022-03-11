@@ -29,21 +29,21 @@ class InstituteParser:
         institute_info = parse_institute_info(soup)
 
         if institute_info is None:
-            return None
+            return
 
         institute, _ = institute_info
 
         institute_parameters = parse_institute_parameters(soup)
 
         if institute_parameters is None:
-            return None
+            return
 
         form_of_training, _ = institute_parameters
 
         a_forms_of_training = form_of_training.find_all('a')
 
         if not len(a_forms_of_training):
-            pass
+            return
 
         for a_form_of_training in a_forms_of_training:
             self.__forms_of_training_params[institute][a_form_of_training.text.strip()] = a_form_of_training['href']
@@ -54,21 +54,21 @@ class InstituteParser:
         institute_info = parse_institute_info(soup)
 
         if institute_info is None:
-            return None
+            return
 
         institute, _ = institute_info
 
         institute_parameters = parse_institute_parameters(soup)
 
         if institute_parameters is None:
-            return None
+            return
 
         _, course = institute_parameters
 
         a_courses = course.find_all('a')
 
         if not len(a_courses):
-            pass
+            return
 
         for a_course in a_courses:
             self.__courses_params[institute][a_course.text.strip()].append(
