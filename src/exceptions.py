@@ -1,6 +1,6 @@
-class ScheduleNotFound(Exception):
+class GroupNotFound(Exception):
     pass
 
 
-class CurrentWeekNotFound(Exception):
+class ScheduleNotFound(Exception):
     pass

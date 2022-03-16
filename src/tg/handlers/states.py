@@ -5,8 +5,8 @@ from src.consts import MESSAGE_CANCELLED, MESSAGE_INSTITUTE_NOT_FOUND, MESSAGE_S
     MESSAGE_SELECT_GROUP, MESSAGE_SELECT_INSTITUTE, MESSAGE_FORM_OF_TRAINING_NOT_FOUND, MESSAGE_SELECT_FORM_OF_TRAINING, \
     KEYBOARD_BUTTON_CHOOSE_GROUP
 from src.services.groups import groups_service
-from src.tg.states.group import GroupState
 from src.tg.handlers.schedule import handler_schedule
+from src.tg.states.group import GroupState
 
 
 async def handler_cancel(message: types.Message, state: FSMContext):
@@ -71,7 +71,8 @@ async def process_form_of_training(message: types.Message, state: FSMContext):
             keyboard.add(types.KeyboardButton(text=KEYBOARD_BUTTON_CHOOSE_GROUP))
             return await message.reply(MESSAGE_FORM_OF_TRAINING_NOT_FOUND, reply_markup=keyboard)
 
-    keyboard.add(*(types.KeyboardButton(x['name']) for x in groups_service.get_groups()[institute][course][form_of_training]))
+    keyboard.add(
+        *(types.KeyboardButton(x['name']) for x in groups_service.get_groups()[institute][course][form_of_training]))
 
     await GroupState.group.set()
     await message.reply(MESSAGE_SELECT_GROUP, reply_markup=keyboard)

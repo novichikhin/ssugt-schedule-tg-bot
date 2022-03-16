@@ -5,8 +5,8 @@ from enum import Enum, auto
 import httpx
 from httpx import Response
 
-from src.parse.groups import GroupsParser
 from src.consts import SCHEDULE_URL, INSTITUTES_PARAMETERS
+from src.parse.groups import GroupsParser
 from src.parse.institute import InstituteParser
 
 institute_parser = InstituteParser()

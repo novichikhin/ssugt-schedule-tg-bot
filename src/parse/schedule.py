@@ -3,17 +3,17 @@ from bs4 import BeautifulSoup
 
 class ScheduleParser:
     def __init__(self, html: str):
-        self.__schedule = {
+        self._schedule = {
             'group': '',
             'schedule': []
         }
 
-        self.__parse_html(html)
+        self._parse_schedule(html)
 
     def get_schedule(self):
-        return self.__schedule
+        return self._schedule
 
-    def __parse_html(self, html: str):
+    def _parse_schedule(self, html: str):
         soup = BeautifulSoup(html, 'html.parser')
         div_general_title_page_no_print = soup.find('div', {'class': 'general_title_page no-print'})
 
@@ -21,7 +21,7 @@ class ScheduleParser:
             return
 
         # print(f"{div_general_title_page_no_print.text}\n\n\n")
-        self.__schedule['group'] = div_general_title_page_no_print.text.strip()
+        self._schedule['group'] = div_general_title_page_no_print.text.strip()
         ul_bxslider = soup.find('ul', {'class': 'bxslider'})
         li_date_weeks = ul_bxslider.find_all('li', {'class': 'date_week'})
 
@@ -82,4 +82,4 @@ class ScheduleParser:
 
                 weekly_schedule['weekly_schedule'].append(schedule_for_day)
 
-            self.__schedule['schedule'].append(weekly_schedule)
+            self._schedule['schedule'].append(weekly_schedule)

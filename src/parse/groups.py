@@ -7,16 +7,15 @@ from src.parse.utils import parse_institute_info, parse_institute_parameters
 
 class GroupsParser:
     def __init__(self):
-        self.__soup = None
-        self.__groups = defaultdict(lambda: defaultdict(lambda: defaultdict(list)))
+        self._groups = defaultdict(lambda: defaultdict(lambda: defaultdict(list)))
 
     def add_group(self, html: str):
-        self.__parse_group(html)
+        self._parse_group(html)
 
     def get_groups(self):
-        return self.__groups
+        return self._groups
 
-    def __parse_group(self, html: str) -> None:
+    def _parse_group(self, html: str) -> None:
         soup = BeautifulSoup(html, 'html.parser')
 
         institute_info = parse_institute_info(soup)
@@ -55,4 +54,4 @@ class GroupsParser:
                 'name': a_item_filter_select.text.strip(),
                 'url': a_item_filter_select['href']
             }
-            self.__groups[institute][course][form_of_training_text].append(group)
+            self._groups[institute][course][form_of_training_text].append(group)

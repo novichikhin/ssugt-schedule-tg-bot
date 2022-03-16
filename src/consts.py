@@ -24,14 +24,13 @@ INSTITUTES_PARAMETERS = [
 
 SCHEDULE_URL = 'http://rasp.sgugit.ru/'
 
-SCHEDULE_NUMBERS = ['1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣', '6️⃣', '7️⃣', '8️⃣', '9️9️⃣', '🔟']
+SCHEDULE_NUMBERS = ['1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣', '6️⃣', '7️⃣', '8️⃣', '9️⃣', '🔟']
 
 KEYBOARD_BUTTON_CHOOSE_GROUP = 'Выбрать группу'
 
-MESSAGE_COPYRIGHT = '❗ Расписание взято с сайта СГУГиТ —'
 MESSAGE_STOP_FLOOD = '📛 Пожалуйста, прекратите флудить.'
 MESSAGE_SCHEDULE_NOT_FOUND = '📛 Расписание не найдено, попробуйте позже.'
-MESSAGE_CURRENT_WEEK_NOT_FOUND = '📛 Расписание на текущую неделю не найдено, попробуйте позже.'
+MESSAGE_CURRENT_DAY_NOT_FOUND = '📛 Расписание на этот день не найдено.'
 MESSAGE_CONNECTION_PROBLEM = '📛 Проблема с соединением сайта, попробуйте позже.'
 MESSAGE_SOMETHING_WENT_WRONG = '📛 Что-то пошло не так, попробуйте позже.'
 
@@ -41,10 +40,11 @@ MESSAGE_SELECT_INSTITUTE = '🏛 Выберите ваш институт.'
 MESSAGE_SELECT_COURSE = '🔢 Выберите ваш курс.'
 MESSAGE_SELECT_FORM_OF_TRAINING = '🎫 Выберите форму обучения.'
 MESSAGE_SELECT_GROUP = '🎓 Выберите вашу группу.'
+MESSAGE_SELECT_OTHER_GROUP = '🎓 Вы можете выбрать расписание другой группы.'
 
-MESSAGE_INSTITUTE_NOT_FOUND = '📛 Институт не найден.'
-MESSAGE_COURSE_NOT_FOUND = '📛 Курс не найден.'
-MESSAGE_FORM_OF_TRAINING_NOT_FOUND = '📛 Форма обучения не найдена.'
-MESSAGE_GROUP_NOT_FOUND = '📛 Группа не найдена.'
+MESSAGE_INSTITUTE_NOT_FOUND = '📛 Институт не найден. Попробуйте ещё раз.'
+MESSAGE_COURSE_NOT_FOUND = '📛 Курс не найден. Попробуйте ещё раз.'
+MESSAGE_FORM_OF_TRAINING_NOT_FOUND = '📛 Форма обучения не найдена. Попробуйте ещё раз.'
+MESSAGE_GROUP_NOT_FOUND = '📛 Группа не найдена. Попробуйте ещё раз.'
 
 MESSAGE_CANCELLED = '❌ Действие отменено.'

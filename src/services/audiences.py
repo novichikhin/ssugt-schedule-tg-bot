@@ -14,11 +14,12 @@ class AudiencesService:
                 response = client.get(SCHEDULE_URL + '?sec=3')
 
             audiences_parser = AudiencesParser(response.text)
-            self.__audiences = audiences_parser.get_audiences()
+            self._audiences = audiences_parser.get_audiences()
         except httpx.HTTPError:
-            self.__audiences = defaultdict(list)
+            self._audiences = defaultdict(list)
 
     def get_audiences(self) -> DefaultDict[str, List]:
-        return self.__audiences
+        return self._audiences
+
 
 audiences_service = AudiencesService()
