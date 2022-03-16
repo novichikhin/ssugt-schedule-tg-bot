@@ -86,5 +86,6 @@ async def handler_keyboard_calendar_schedule(callback_query: types.CallbackQuery
         logging.exception('Sending a schedule')
         await callback_query.message.answer(MESSAGE_SOMETHING_WENT_WRONG)
     finally:
-        group['last_date'] = selected
-        user_service[user_id].set_group(group)
+        if selected:
+            group['last_date'] = selected
+            user_service[user_id].set_group(group)
