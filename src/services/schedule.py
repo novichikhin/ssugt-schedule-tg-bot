@@ -34,11 +34,8 @@ class ScheduleService:
 
         return self._cache[group_name]['expired'] > time.time()
 
-    async def get_schedule(self, group_name: str, date: Optional[datetime.date] = None) -> tuple[
+    async def get_schedule(self, group_name: str, date: datetime.date = datetime.date.today()) -> tuple[
         str, str, datetime.date]:
-        if date is None:
-            date = datetime.date.today()
-
         group = groups_service.find_group(group_name)
         if group is None:
             raise GroupNotFound

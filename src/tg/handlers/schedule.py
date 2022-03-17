@@ -32,7 +32,9 @@ async def handler_schedule(message: types.Message):
 
         user_service[user_id].clear_messages()
 
-        group_name, schedule, max_date = await schedule_service.get_schedule(text)
+        curr_date = datetime.date.today()
+
+        group_name, schedule, max_date = await schedule_service.get_schedule(text, curr_date)
         keyboard.insert(types.KeyboardButton(text=group_name))
 
         detailed_telegram_calendar = CalendarService(locale='ru', min_date=datetime.date.today(), max_date=max_date)
@@ -42,13 +44,13 @@ async def handler_schedule(message: types.Message):
         user_service[user_id].add_message((await message.answer(schedule, reply_markup=calendar)).message_id)
         await message.answer(MESSAGE_SELECT_OTHER_GROUP, reply_markup=keyboard)
 
-        user_service[user_id].set_group({'name': group_name, 'max_date': max_date})
+        user_service[user_id].set_group({'name': group_name, 'max_date': max_date, 'last_date': curr_date})
     except GroupNotFound:
         await message.reply(MESSAGE_GROUP_NOT_FOUND, reply_markup=keyboard)
     except ScheduleNotFound:
         await message.answer(MESSAGE_SCHEDULE_NOT_FOUND, reply_markup=keyboard)
     except httpx.HTTPError:
-        logging.exception(f'HTTP Exception')
+        logging.exception('HTTP Exception')
         await message.answer(MESSAGE_CONNECTION_PROBLEM, reply_markup=keyboard)
     except Exception:
         logging.exception('Sending a schedule')
@@ -73,19 +75,19 @@ async def handler_keyboard_calendar_schedule(callback_query: types.CallbackQuery
 
                 _, schedule, _ = await schedule_service.get_schedule(group['name'].lower(), selected)
                 await callback_query.message.edit_text(schedule, reply_markup=keyboard)
-
-        await callback_query.answer()
     except GroupNotFound:
         await callback_query.message.answer(MESSAGE_GROUP_NOT_FOUND)
     except ScheduleNotFound:
         await callback_query.message.answer(MESSAGE_SCHEDULE_NOT_FOUND)
     except httpx.HTTPError:
-        logging.exception(f'HTTP Exception')
+        logging.exception('HTTP Exception')
         await callback_query.message.answer(MESSAGE_CONNECTION_PROBLEM)
     except Exception:
         logging.exception('Sending a schedule')
         await callback_query.message.answer(MESSAGE_SOMETHING_WENT_WRONG)
     finally:
-        if selected:
+        await callback_query.answer()
+
+        if selected is not None:
             group['last_date'] = selected
             user_service[user_id].set_group(group)
