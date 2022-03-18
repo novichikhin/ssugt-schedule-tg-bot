@@ -27,24 +27,28 @@ async def handler_schedule(message: types.Message):
     keyboard.add(types.KeyboardButton(text=KEYBOARD_BUTTON_CHOOSE_GROUP))
 
     try:
-        for message_id in user_service[user_id].get_messages():
+        for message_id in user_service[user_id].messages:
             await DeleteMessage(chat_id=message.chat.id, message_id=message_id).execute_response(message.bot)
 
-        user_service[user_id].clear_messages()
+        user_service[user_id].messages.clear()
 
         curr_date = datetime.date.today()
+        user_service[user_id].group['last_date'] = curr_date
 
-        group_name, schedule, max_date = await schedule_service.get_schedule(text, curr_date)
+        group_name, schedule, min_date, max_date = await schedule_service.get_schedule(text, curr_date)
         keyboard.insert(types.KeyboardButton(text=group_name))
 
-        detailed_telegram_calendar = CalendarService(locale='ru', min_date=datetime.date.today(), max_date=max_date)
+        user_service[user_id].group['name'] = group_name
+        user_service[user_id].group['min_date'] = min_date
+        user_service[user_id].group['max_date'] = max_date
+
+        detailed_telegram_calendar = CalendarService(locale='ru', min_date=min_date, current_date=datetime.date.today(),
+                                                     max_date=max_date)
 
         calendar, _ = detailed_telegram_calendar.build()
 
-        user_service[user_id].add_message((await message.answer(schedule, reply_markup=calendar)).message_id)
+        user_service[user_id].messages.append((await message.answer(schedule, reply_markup=calendar)).message_id)
         await message.answer(MESSAGE_SELECT_OTHER_GROUP, reply_markup=keyboard)
-
-        user_service[user_id].set_group({'name': group_name, 'max_date': max_date, 'last_date': curr_date})
     except GroupNotFound:
         await message.reply(MESSAGE_GROUP_NOT_FOUND, reply_markup=keyboard)
     except ScheduleNotFound:
@@ -59,9 +63,14 @@ async def handler_schedule(message: types.Message):
 
 async def handler_keyboard_calendar_schedule(callback_query: types.CallbackQuery):
     user_id = callback_query.from_user.id
-    group = user_service[user_id].get_group()
 
-    detailed_telegram_calendar = CalendarService(locale='ru', min_date=datetime.date.today(), max_date=group['max_date'])
+    if user_service[user_id].group['in_proccesing']:
+        await callback_query.answer()
+        return
+
+    detailed_telegram_calendar = CalendarService(locale='ru', min_date=user_service[user_id].group['min_date'],
+                                                 current_date=datetime.date.today(),
+                                                 max_date=user_service[user_id].group['max_date'])
     selected, keyboard, step = detailed_telegram_calendar.process(
         callback_query.data)
 
@@ -69,11 +78,15 @@ async def handler_keyboard_calendar_schedule(callback_query: types.CallbackQuery
         if not selected and keyboard:
             await callback_query.message.edit_reply_markup(reply_markup=keyboard)
         elif selected:
-            if 'last_date' not in group or group['last_date'] != selected:
+            if 'last_date' not in user_service[user_id].group or user_service[user_id].group['last_date'] != selected:
                 detailed_telegram_calendar.current_date = selected
                 keyboard, _ = detailed_telegram_calendar.build()
 
-                _, schedule, _ = await schedule_service.get_schedule(group['name'].lower(), selected)
+                user_service[user_id].group['last_date'] = selected
+                user_service[user_id].group['in_proccesing'] = True
+
+                _, schedule, _, _ = await schedule_service.get_schedule(user_service[user_id].group['name'].lower(),
+                                                                        selected)
                 await callback_query.message.edit_text(schedule, reply_markup=keyboard)
     except GroupNotFound:
         await callback_query.message.answer(MESSAGE_GROUP_NOT_FOUND)
@@ -88,6 +101,5 @@ async def handler_keyboard_calendar_schedule(callback_query: types.CallbackQuery
     finally:
         await callback_query.answer()
 
-        if selected is not None:
-            group['last_date'] = selected
-            user_service[user_id].set_group(group)
+        if user_service[user_id].group['in_proccesing']:
+            user_service[user_id].group['in_proccesing'] = False

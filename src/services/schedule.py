@@ -35,7 +35,7 @@ class ScheduleService:
         return self._cache[group_name]['expired'] > time.time()
 
     async def get_schedule(self, group_name: str, date: datetime.date = datetime.date.today()) -> tuple[
-        str, str, datetime.date]:
+        str, str, datetime.date, datetime.date]:
         group = groups_service.find_group(group_name)
         if group is None:
             raise GroupNotFound
@@ -55,11 +55,12 @@ class ScheduleService:
             self._set_cache(group['name'], schedule)
 
         _, max_date = self._parse_date(schedule['schedule'][-1])
+        min_date, _ = self._parse_date(schedule['schedule'][0])
         formated_schedule = f"🎓 {schedule['group']}\n\n"
 
         formated_schedule += self._format_schedule(self._find_schedule(schedule, date))
 
-        return (group['name'], formated_schedule, max_date)
+        return (group['name'], formated_schedule, min_date, max_date)
 
     def _find_schedule(self, schedule: dict, date: datetime.date) -> Optional[dict]:
         for curr_schedule in schedule['schedule']:
