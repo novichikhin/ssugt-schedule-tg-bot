@@ -12,7 +12,7 @@ from src.tg.states.group import GroupState
 
 def register_handlers(dp: Dispatcher):
     dp.register_callback_query_handler(handler_keyboard_calendar_schedule, DetailedTelegramCalendar.func(),
-                                       chat_type=types.ChatType.PRIVATE)
+                                       chat_type=types.ChatType.PRIVATE, state='*')
     dp.register_message_handler(handler_start, chat_type=types.ChatType.PRIVATE, commands=start_commands, state='*')
     dp.register_message_handler(handler_group, Text(equals=groups_commands, ignore_case=True),
                                 chat_type=types.ChatType.PRIVATE)

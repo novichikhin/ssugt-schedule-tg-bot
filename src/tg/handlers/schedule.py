@@ -79,14 +79,18 @@ async def handler_keyboard_calendar_schedule(callback_query: types.CallbackQuery
             await callback_query.message.edit_reply_markup(reply_markup=keyboard)
         elif selected:
             if 'last_date' not in user_service[user_id].group or user_service[user_id].group['last_date'] != selected:
-                detailed_telegram_calendar.current_date = selected
-                keyboard, _ = detailed_telegram_calendar.build()
-
                 user_service[user_id].group['last_date'] = selected
                 user_service[user_id].group['in_proccesing'] = True
 
-                _, schedule, _, _ = await schedule_service.get_schedule(user_service[user_id].group['name'].lower(),
-                                                                        selected)
+                _, schedule, min_date, max_date = await schedule_service.get_schedule(
+                    user_service[user_id].group['name'].lower(),
+                    selected)
+                detailed_telegram_calendar.min_date = user_service[user_id].group['min_date'] = min_date
+                detailed_telegram_calendar.max_date = user_service[user_id].group['max_date'] = max_date
+
+                detailed_telegram_calendar.current_date = selected
+                keyboard, _ = detailed_telegram_calendar.build()
+
                 await callback_query.message.edit_text(schedule, reply_markup=keyboard)
     except GroupNotFound:
         await callback_query.message.answer(MESSAGE_GROUP_NOT_FOUND)
