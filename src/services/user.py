@@ -1,4 +1,3 @@
-import datetime
 import time
 from collections import defaultdict
 
@@ -13,6 +12,7 @@ class UserService:
             'min_date': None,
             'max_date': None,
             'last_date': None,
+            'last_keyboard': None,
             'in_proccesing': False
         }
         self.messages = []

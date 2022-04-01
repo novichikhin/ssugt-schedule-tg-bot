@@ -18,7 +18,7 @@ async def handler_schedule(message: types.Message):
     text = message.text.lower().strip()
     user_id = message.from_user.id
 
-    if user_service[user_id].is_flood():
+    if user_service[user_id].is_flood() or user_service[user_id].group['in_proccesing']:
         return await message.reply(MESSAGE_STOP_FLOOD)
 
     user_service[user_id].add_flood_delay()
@@ -75,12 +75,15 @@ async def handler_keyboard_calendar_schedule(callback_query: types.CallbackQuery
         callback_query.data)
 
     try:
+        user_service[user_id].group['in_proccesing'] = True
+
         if not selected and keyboard:
-            await callback_query.message.edit_reply_markup(reply_markup=keyboard)
+            if user_service[user_id].group['last_keyboard'] != keyboard:
+                user_service[user_id].group['last_keyboard'] = keyboard
+                await callback_query.message.edit_reply_markup(reply_markup=keyboard)
         elif selected:
-            if 'last_date' not in user_service[user_id].group or user_service[user_id].group['last_date'] != selected:
+            if user_service[user_id].group['last_date'] != selected:
                 user_service[user_id].group['last_date'] = selected
-                user_service[user_id].group['in_proccesing'] = True
 
                 _, schedule, min_date, max_date = await schedule_service.get_schedule(
                     user_service[user_id].group['name'].lower(),
