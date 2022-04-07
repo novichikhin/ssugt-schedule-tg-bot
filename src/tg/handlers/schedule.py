@@ -3,7 +3,6 @@ import logging
 
 import httpx
 from aiogram import types
-from aiogram.dispatcher.webhook import DeleteMessage
 
 from src.consts import MESSAGE_STOP_FLOOD, MESSAGE_GROUP_NOT_FOUND, MESSAGE_SCHEDULE_NOT_FOUND, \
     MESSAGE_CONNECTION_PROBLEM, MESSAGE_SOMETHING_WENT_WRONG, \
@@ -27,28 +26,30 @@ async def handler_schedule(message: types.Message):
     keyboard.add(types.KeyboardButton(text=KEYBOARD_BUTTON_CHOOSE_GROUP))
 
     try:
-        for message_id in user_service[user_id].messages:
-            await DeleteMessage(chat_id=message.chat.id, message_id=message_id).execute_response(message.bot)
-
-        user_service[user_id].messages.clear()
+        user_service[user_id].group['in_proccesing'] = True
 
         curr_date = datetime.date.today()
-        user_service[user_id].group['last_date'] = curr_date
 
         group_name, schedule, min_date, max_date = await schedule_service.get_schedule(text, curr_date)
         keyboard.insert(types.KeyboardButton(text=group_name))
 
-        user_service[user_id].group['name'] = group_name
-        user_service[user_id].group['min_date'] = min_date
-        user_service[user_id].group['max_date'] = max_date
+        data = {
+            'name': group_name,
+            'min_date': min_date,
+            'max_date': max_date,
+            'last_date': curr_date,
+            'last_keyboard': None
+        }
 
         detailed_telegram_calendar = CalendarService(locale='ru', min_date=min_date, current_date=datetime.date.today(),
                                                      max_date=max_date)
 
         calendar, _ = detailed_telegram_calendar.build()
 
-        user_service[user_id].messages.append((await message.answer(schedule, reply_markup=calendar)).message_id)
+        message_id = (await message.answer(schedule, reply_markup=calendar)).message_id
         await message.answer(MESSAGE_SELECT_OTHER_GROUP, reply_markup=keyboard)
+
+        user_service[user_id].group['messages'][message_id] = data
     except GroupNotFound:
         await message.reply(MESSAGE_GROUP_NOT_FOUND, reply_markup=keyboard)
     except ScheduleNotFound:
@@ -59,6 +60,9 @@ async def handler_schedule(message: types.Message):
     except Exception:
         logging.exception('Sending a schedule')
         await message.answer(MESSAGE_SOMETHING_WENT_WRONG, reply_markup=keyboard)
+    finally:
+        if user_service[user_id].group['in_proccesing']:
+            user_service[user_id].group['in_proccesing'] = False
 
 
 async def handler_keyboard_calendar_schedule(callback_query: types.CallbackQuery):
@@ -68,9 +72,17 @@ async def handler_keyboard_calendar_schedule(callback_query: types.CallbackQuery
         await callback_query.answer()
         return
 
-    detailed_telegram_calendar = CalendarService(locale='ru', min_date=user_service[user_id].group['min_date'],
+    message_id = callback_query.message.message_id
+
+    if message_id not in user_service[user_id].group['messages']:
+        await callback_query.answer()
+        return
+
+    group = user_service[user_id].group['messages'][message_id]
+
+    detailed_telegram_calendar = CalendarService(locale='ru', min_date=group['min_date'],
                                                  current_date=datetime.date.today(),
-                                                 max_date=user_service[user_id].group['max_date'])
+                                                 max_date=group['max_date'])
     selected, keyboard, step = detailed_telegram_calendar.process(
         callback_query.data)
 
@@ -78,18 +90,18 @@ async def handler_keyboard_calendar_schedule(callback_query: types.CallbackQuery
         user_service[user_id].group['in_proccesing'] = True
 
         if not selected and keyboard:
-            if user_service[user_id].group['last_keyboard'] != keyboard:
-                user_service[user_id].group['last_keyboard'] = keyboard
+            if group['last_keyboard'] != keyboard:
+                user_service[user_id].group['messages'][message_id]['last_keyboard'] = keyboard
                 await callback_query.message.edit_reply_markup(reply_markup=keyboard)
         elif selected:
-            if user_service[user_id].group['last_date'] != selected:
-                user_service[user_id].group['last_date'] = selected
+            if group['last_date'] != selected:
+                user_service[user_id].group['messages'][message_id]['last_date'] = selected
 
                 _, schedule, min_date, max_date = await schedule_service.get_schedule(
-                    user_service[user_id].group['name'].lower(),
+                    group['name'].lower(),
                     selected)
-                detailed_telegram_calendar.min_date = user_service[user_id].group['min_date'] = min_date
-                detailed_telegram_calendar.max_date = user_service[user_id].group['max_date'] = max_date
+                detailed_telegram_calendar.min_date = user_service[user_id].group['messages'][message_id]['min_date'] = min_date
+                detailed_telegram_calendar.max_date = user_service[user_id].group['messages'][message_id]['max_date'] = max_date
 
                 detailed_telegram_calendar.current_date = selected
                 keyboard, _ = detailed_telegram_calendar.build()

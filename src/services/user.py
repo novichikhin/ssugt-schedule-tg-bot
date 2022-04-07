@@ -8,14 +8,9 @@ class UserService:
     def __init__(self):
         self._anti_flood = 0
         self.group = {
-            'name': '',
-            'min_date': None,
-            'max_date': None,
-            'last_date': None,
-            'last_keyboard': None,
+            'messages': defaultdict(dict),
             'in_proccesing': False
         }
-        self.messages = []
 
     def is_flood(self) -> bool:
         return self._anti_flood > time.time()
