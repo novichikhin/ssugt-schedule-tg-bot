@@ -1,4 +1,5 @@
 import asyncio
+import locale
 import logging
 
 from aiogram import Bot, Dispatcher
@@ -9,6 +10,7 @@ from src.tg.handlers import register_handlers
 
 
 async def main() -> None:
+    locale.setlocale(locale.LC_ALL, ('ru_RU', 'UTF-8'))
     logging.basicConfig(filename='tg_server.log', format='%(asctime)s %(levelname)s %(message)s',
                         datefmt='%Y-%m-%d %H:%M:%S')
 

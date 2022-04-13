@@ -32,8 +32,8 @@ async def get_institute_data(param: str, institute_data_type: InstituteData) -> 
             case InstituteData.groups:
                 groups_parser.add_group(response.text)
 
-    except httpx.HTTPError:
-        pass
+    except httpx.HTTPError as e:
+        print(str(e))
 
 
 if __name__ == '__main__':
