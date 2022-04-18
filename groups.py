@@ -11,6 +11,7 @@ from src.parse.institute import InstituteParser
 
 institute_parser = InstituteParser()
 groups_parser = GroupsParser()
+groups_parsed_params = set()
 
 
 class InstituteData(Enum):
@@ -29,8 +30,10 @@ async def get_institute_data(param: str, institute_data_type: InstituteData) -> 
                 institute_parser.add_forms_of_training(response.text)
             case InstituteData.courses:
                 institute_parser.add_courses(response.text)
-            case InstituteData.groups:
-                groups_parser.add_group(response.text)
+
+        if param not in groups_parsed_params:
+            groups_parser.add_group(response.text)
+            groups_parsed_params.add(param)
 
     except httpx.HTTPError as e:
         print(str(e))
@@ -58,6 +61,8 @@ if __name__ == '__main__':
             for i in institute_parser.get_courses().values():
                 for j in i.values():
                     groups_parameters += j
+
+            groups_parameters = [i for i in groups_parameters if i not in groups_parsed_params]
 
             try:
                 tasks = [loop.create_task(get_institute_data(group_parameters, InstituteData.groups)) for
