@@ -27,9 +27,9 @@ CANCEL_COMMANDS = [
 ]
 
 INSTITUTES_PARAMETERS = [
-    '?ii=1',
-    '?ii=2',
-    '?ii=3',
+    '?ii=1&fi=1&c=1&',
+    '?ii=2&fi=1&c=1&',
+    '?ii=3&fi=1&c=1&',
 ]
 
 TEACHERS_LIST = '?sec=1'

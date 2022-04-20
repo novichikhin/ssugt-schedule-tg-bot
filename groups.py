@@ -12,6 +12,7 @@ from src.parse.institute import InstituteParser
 institute_parser = InstituteParser()
 groups_parser = GroupsParser()
 groups_parsed_params = set()
+total_requests = 0
 
 
 class InstituteData(Enum):
@@ -21,19 +22,20 @@ class InstituteData(Enum):
 
 
 async def get_institute_data(param: str, institute_data_type: InstituteData) -> None:
+    global total_requests
     try:
         async with httpx.AsyncClient() as client:
+            total_requests += 1
             response: Response = await client.get(SCHEDULE_URL + param)
 
-        match institute_data_type:
-            case InstituteData.forms_of_training:
-                institute_parser.add_forms_of_training(response.text)
-            case InstituteData.courses:
-                institute_parser.add_courses(response.text)
+        if institute_data_type in [InstituteData.forms_of_training, InstituteData.courses]:
+            institute_parser.add_forms_of_training(response.text)
+            institute_parser.add_courses(response.text)
 
         if param not in groups_parsed_params:
             groups_parser.add_group(response.text)
-            groups_parsed_params.add(param)
+
+        groups_parsed_params.add(param)
 
     except httpx.HTTPError as e:
         print(str(e))
@@ -48,7 +50,7 @@ if __name__ == '__main__':
                  INSTITUTES_PARAMETERS]
         loop.run_until_complete(asyncio.wait(tasks))
     finally:
-        forms_of_training = [j for i in institute_parser.get_forms_of_training().values() for j in i.values()]
+        forms_of_training = [j for i in institute_parser.get_forms_of_training().values() for j in i.values() if j not in groups_parsed_params]
 
         try:
             tasks = [loop.create_task(get_institute_data(form_of_training, InstituteData.courses)) for form_of_training
@@ -73,3 +75,5 @@ if __name__ == '__main__':
 
                 with open('groups.json', 'w', encoding='utf-8') as f:
                     json.dump(groups_parser.get_groups(), f, ensure_ascii=False, indent=4, sort_keys=True)
+
+                print(total_requests)
